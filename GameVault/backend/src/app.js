@@ -11,8 +11,9 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173', // Vite default port
-    'http://localhost:3000'  // CRA/Next.js default port
-  ],
+    'http://localhost:3000', // CRA/Next.js default port
+    process.env.FRONTEND_URL,
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']

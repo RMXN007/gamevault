@@ -8,7 +8,7 @@ const PORT = Number(process.env.PORT) || 5000;
 
 connectDB()
   .then(() => {
-    const server = app.listen(PORT, '127.0.0.1', () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`Express server started on port ${PORT}`);
       console.log(`Address: ${JSON.stringify(server.address())}`);
     });
