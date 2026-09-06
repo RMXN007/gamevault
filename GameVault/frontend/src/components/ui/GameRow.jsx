@@ -16,7 +16,7 @@ const GameRow = ({ title, games, action = 'play' }) => {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {games.map(game => (
-          <GameCard key={game.id} game={game} action={action} />
+          <GameCard key={game._id || game.id} game={game} action={action} />
         ))}
       </div>
     </section>

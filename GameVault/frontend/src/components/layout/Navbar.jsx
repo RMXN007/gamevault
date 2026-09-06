@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Gamepad2, User, Library, Settings as SettingsIcon } from 'lucide-react';
+import { Gamepad2, Library, Settings as SettingsIcon, MessageSquare, Shield } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { mockUser } from '../../data/mock';
+import { useAuth } from '../../contexts/AuthContext';
 
 // We map themes to icons or labels here, or just keep it simple.
 const Navbar = () => {
   const { theme, setTheme, themes } = useTheme();
   const location = useLocation();
+  const { user, isAuthenticated, logout, openAuth } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
@@ -23,10 +24,21 @@ const Navbar = () => {
           <Link to="/" className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-[var(--radius-button)] font-medium transition-colors ${isActive('/') ? 'text-[var(--color-text-main)] bg-[var(--color-bg-secondary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]'}`}>
             Store
           </Link>
+          <Link to="/games" className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-[var(--radius-button)] font-medium transition-colors ${isActive('/games') ? 'text-[var(--color-text-main)] bg-[var(--color-bg-secondary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]'}`}>
+            <Gamepad2 className="w-4 h-4" /> Games
+          </Link>
           <Link to="/library" className={`flex items-center gap-2 px-3 py-2 rounded-[var(--radius-button)] font-medium transition-colors ${isActive('/library') ? 'text-[var(--color-text-main)] bg-[var(--color-bg-secondary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]'}`}>
             <Library className="w-5 h-5 sm:hidden" />
             <span className="hidden sm:inline-block">Library</span>
           </Link>
+          <Link to="/community" className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-[var(--radius-button)] font-medium transition-colors ${isActive('/community') ? 'text-[var(--color-text-main)] bg-[var(--color-bg-secondary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-bg-secondary)]'}`}>
+            <MessageSquare className="w-4 h-4" /> Community
+          </Link>
+          {isAuthenticated && user?.isAdmin && (
+            <Link to="/admin/games" className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-[var(--radius-button)] font-medium transition-colors ${isActive('/admin/games') ? 'text-red-500 bg-red-500/10' : 'text-red-400/80 hover:text-red-500 hover:bg-red-500/10'}`}>
+              <Shield className="w-4 h-4" /> Admin
+            </Link>
+          )}
           
           <div className="w-px h-6 bg-[var(--color-border-color)] mx-2 hidden sm:block"></div>
           
@@ -45,10 +57,7 @@ const Navbar = () => {
               <SettingsIcon className="w-5 h-5" />
             </Link>
             
-            <Link to="/profile" className="flex items-center gap-2 ml-2 hover:opacity-80 transition-opacity">
-              <img src={mockUser.avatar} alt={mockUser.username} className="w-8 h-8 rounded-full border-2 border-[var(--color-accent)] object-cover" />
-              <span className="hidden sm:inline-block font-medium text-sm text-[var(--color-text-main)]">{mockUser.username}</span>
-            </Link>
+            {isAuthenticated ? <><Link to="/profile" className="flex items-center gap-2 ml-2 hover:opacity-80 transition-opacity">{user.avatar ? <img src={user.avatar} alt="" className="w-8 h-8 rounded-full border-2 border-[var(--color-accent)] object-cover" /> : <div className="w-8 h-8 rounded-full border-2 border-[var(--color-accent)] flex items-center justify-center text-xs text-[var(--color-accent)]">{user.username?.slice(0, 2).toUpperCase()}</div>}<span className="hidden lg:inline-block font-medium text-sm">{user.username}</span></Link><button onClick={logout} className="hidden sm:block text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]">Logout</button></> : <div className="flex gap-2 ml-1"><button onClick={() => openAuth('login')} className="text-sm px-2 py-1 text-[var(--color-text-main)]">Sign In</button><button onClick={() => openAuth('register')} className="text-sm px-3 py-1 rounded bg-[var(--color-accent)] text-white">Sign Up</button></div>}
           </div>
         </div>
       </div>

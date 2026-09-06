@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play } from 'lucide-react';
 import Button from '../components/ui/Button';
 import GameRow from '../components/ui/GameRow';
-import { categories, mockGames } from '../data/mock';
+import { gamesApi } from '../services/api';
 
 const Home = () => {
-  const featuredGame = mockGames[0];
-  const popularGames = mockGames.slice(1, 5);
-  const mostPlayedGames = [...mockGames].reverse().slice(0, 4);
+  const [games, setGames] = useState([]);
+  const [error, setError] = useState('');
+  useEffect(() => { 
+    gamesApi.home()
+      .then((data) => setGames(data.results || []))
+      .catch((err) => setError(err.message)); 
+  }, []);
+  const featuredGame = games[0];
+  const genres = useMemo(() => [...new Set(games.flatMap((game) => game.genre || []))], [games]);
+  const recentGames = games.slice(0, 5);
+  const popularGames = games.slice(1, 6);
 
+  if (error) return <div className="container mx-auto px-4 py-16 text-[var(--color-text-muted)]">Unable to load games: {error}</div>;
+  if (!featuredGame) return <div className="container mx-auto px-4 py-16 text-[var(--color-text-muted)]">Loading GameVault discovery…</div>;
+  const heroImage = featuredGame.coverImage || featuredGame.images?.[0];
   return (
     <div className="w-full">
       {/* Hero Banner Section */}
       <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center mb-16 overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src={featuredGame.banner} 
+            src={heroImage} 
             alt={featuredGame.title} 
             className="w-full h-full object-cover object-top opacity-60"
           />
@@ -39,7 +50,7 @@ const Home = () => {
               <Button size="lg" className="gap-2">
                 <Play className="w-5 h-5 fill-current" /> Play Now
               </Button>
-              <Link to={`/game/${featuredGame.id}`}>
+              <Link to={`/games/${featuredGame.rawgId || featuredGame._id || featuredGame.slug}`}>
                 <Button variant="secondary" size="lg">Details</Button>
               </Link>
             </div>
@@ -55,7 +66,7 @@ const Home = () => {
             Browse Categories
           </h2>
           <div className="flex flex-wrap gap-3">
-            {categories.map((cat) => (
+            {genres.map((cat) => (
               <button 
                 key={cat} 
                 className="px-4 py-2 rounded-full border border-[var(--color-border-color)] bg-[var(--color-bg-secondary)] text-[var(--color-text-main)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all font-medium whitespace-nowrap"
@@ -67,10 +78,11 @@ const Home = () => {
         </section>
 
         {/* Popular Games */}
-        <GameRow title="Popular Right Now" games={popularGames} action="play" />
+        <GameRow title="Trending Games" games={popularGames} action="play" />
         
         {/* Most Played Games */}
-        <GameRow title="Most Played This Week" games={mostPlayedGames} action="download" />
+        <GameRow title="Recently Added" games={recentGames} action="download" />
+        {genres.slice(0, 3).map((genre) => <GameRow key={genre} title={`Popular ${genre} Games`} games={games.filter((game) => game.genre?.includes(genre)).slice(0, 5)} action="download" />)}
       </div>
     </div>
   );
